@@ -3,7 +3,12 @@
 This repository streams geolocated tweets about the Boulder flood to a Kafka topic. The tweets are read from a JSON file and sent to a Kafka broker for further processing or analysis.
 
 ---
+## **Add these to build.sbt file** ##
+```cmd
+libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.5.0"
 
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.9"
+```
 ## **How to Run Kafka on Windows**
 
 ### 1. **Start Zookeeper**
