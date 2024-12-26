@@ -32,6 +32,7 @@ object SimulatedTweetIngestion {
       else "Neutral"
     }
 
+
     var counter = 0
     try {
       for (tweet <- tweets) {
@@ -39,7 +40,6 @@ object SimulatedTweetIngestion {
           println("Reached the limit of 5 tweets.")
           sys.exit(0)
         }
-
 
         val hashtags = hashtagPattern.findAllIn(tweet).mkString(", ")
 
@@ -59,6 +59,7 @@ object SimulatedTweetIngestion {
         producer.send(record)
         println(s"Sent: $tweet")
         counter += 1
+
 
         Thread.sleep(1000)
       }
