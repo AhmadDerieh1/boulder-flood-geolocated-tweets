@@ -1,6 +1,8 @@
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import scala.io.Source
 import java.util.Properties
+import scala.util.matching.Regex
+import scala.util.Try
 
 object SimulatedTweetIngestion {
   def main(args: Array[String]): Unit = {
@@ -22,15 +24,26 @@ object SimulatedTweetIngestion {
 
     println(s"Streaming tweets from $tweetFilePath to Kafka topic: $kafkaTopic")
 
-
+    val hashtagPattern: Regex = """#\w+""".r
+    var counter = 0
     try {
       for (tweet <- tweets) {
+        if (counter >= 5) {
+          println("Reached the limit of 5 tweets.")
+          sys.exit(0)
+        }
+        val hashtags = hashtagPattern.findAllIn(tweet).mkString(", ")
+        val processedTweet =
+          s"""{
+                       "original": "$tweet",
+                       "hashtags": "$hashtags",
 
-        val record = new ProducerRecord[String, String](kafkaTopic, tweet)
+          }"""
+        println(s"Processed Tweet: $processedTweet")
+        val record = new ProducerRecord[String, String](kafkaTopic, processedTweet)
         producer.send(record)
         println(s"Sent: $tweet")
-
-
+        counter += 1
         Thread.sleep(1000)
       }
     } catch {
