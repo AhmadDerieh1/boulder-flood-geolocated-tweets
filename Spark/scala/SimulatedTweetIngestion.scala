@@ -23,8 +23,16 @@ object SimulatedTweetIngestion {
     val tweets = Source.fromFile(tweetFilePath).getLines()
 
     println(s"Streaming tweets from $tweetFilePath to Kafka topic: $kafkaTopic")
-
     val hashtagPattern: Regex = """#\w+""".r
+
+    def analyzeSentimentBasic(text: String): String = {
+      val lowerText = text.toLowerCase()
+      if (lowerText.contains("happy") || lowerText.contains("great") || lowerText.contains("good")) "Positive"
+      else if (lowerText.contains("sad") || lowerText.contains("bad") || lowerText.contains("terrible")) "Negative"
+      else "Neutral"
+    }
+
+
     var counter = 0
     try {
       for (tweet <- tweets) {
@@ -32,18 +40,27 @@ object SimulatedTweetIngestion {
           println("Reached the limit of 5 tweets.")
           sys.exit(0)
         }
+
         val hashtags = hashtagPattern.findAllIn(tweet).mkString(", ")
+
+        val sentiment = analyzeSentimentBasic(tweet)
+
         val processedTweet =
           s"""{
-                       "original": "$tweet",
-                       "hashtags": "$hashtags",
+                "original": "$tweet",
+                "hashtags": "$hashtags",
+                 "sentiment": "$sentiment"
+              }"""
 
-          }"""
         println(s"Processed Tweet: $processedTweet")
+
         val record = new ProducerRecord[String, String](kafkaTopic, processedTweet)
+
         producer.send(record)
         println(s"Sent: $tweet")
         counter += 1
+
+
         Thread.sleep(1000)
       }
     } catch {
