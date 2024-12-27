@@ -3,13 +3,16 @@ import scala.io.Source
 import java.util.Properties
 import scala.util.matching.Regex
 import scala.util.Try
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 
+import scala.collection.JavaConverters._
 object SimulatedTweetIngestion {
   def main(args: Array[String]): Unit = {
 
     val kafkaTopic = "tweets-topic"
     val kafkaBrokers = "localhost:9092"
-
+    val processedTopic = "processed-tweets-topic"
 
     val props = new Properties()
     props.put("bootstrap.servers", kafkaBrokers)
@@ -21,36 +24,74 @@ object SimulatedTweetIngestion {
 
     val tweetFilePath = "src/main/boulder_flood_geolocated_tweets.json"
     val tweets = Source.fromFile(tweetFilePath).getLines()
+    // val tweets = Source.fromFile(tweetFilePath).getLines().take(5)
 
     println(s"Streaming tweets from $tweetFilePath to Kafka topic: $kafkaTopic")
 
-    val hashtagPattern: Regex = """#\w+""".r
-    var counter = 0
-    try {
-      for (tweet <- tweets) {
-        if (counter >= 5) {
-          println("Reached the limit of 5 tweets.")
-          sys.exit(0)
-        }
-        val hashtags = hashtagPattern.findAllIn(tweet).mkString(", ")
-        val processedTweet =
-          s"""{
-                       "original": "$tweet",
-                       "hashtags": "$hashtags",
+    tweets.foreach { tweet =>
+      val record = new ProducerRecord[String, String](kafkaTopic, tweet)
+      producer.send(record)
+    }
+    producer.close()
+    val consumerProps = new Properties()
+    consumerProps.put("bootstrap.servers", kafkaBrokers)
+    consumerProps.put("key.deserializer", classOf[StringDeserializer].getName)
+    consumerProps.put("value.deserializer", classOf[StringDeserializer].getName)
+    consumerProps.put("group.id", "tweet-consumer-group")
+    consumerProps.put("auto.offset.reset", "earliest")
+    val consumer = new KafkaConsumer[String, String](consumerProps)
+    consumer.subscribe(java.util.Arrays.asList(kafkaTopic))
 
-          }"""
-        println(s"Processed Tweet: $processedTweet")
-        val record = new ProducerRecord[String, String](kafkaTopic, processedTweet)
-        producer.send(record)
-        println(s"Sent: $tweet")
-        counter += 1
-        Thread.sleep(1000)
+    def analyzeSentimentBasic(text: String): String = {
+      val lowerText = text.toLowerCase
+      if (lowerText.contains("happy") || lowerText.contains("great") || lowerText.contains("good")) "Positive"
+      else if (lowerText.contains("sad") || lowerText.contains("bad") || lowerText.contains("terrible")) "Negative"
+      else "Neutral"
+    }
+
+    def analyzeTweet(tweet: String): (String, Array[String], String) = {
+      val sentiment = analyzeSentimentBasic(tweet)
+      val hashtags = extractHashtags(tweet)
+      val processedTweet = s"""{"original": "$tweet", "hashtags": [${hashtags.mkString(",")}], "sentiment": "$sentiment"}"""
+
+      (processedTweet, hashtags, sentiment)
+    }
+
+    def extractHashtags(text: String): Array[String] = {
+      val hashtagPattern = """#\w+""".r
+      hashtagPattern.findAllIn(text).toArray
+    }
+
+    try {
+      var counter = 0
+      while (true) {
+        val records = consumer.poll(java.time.Duration.ofMillis(100))
+        for (record <- records.asScala) {
+          val tweet = record.value()
+          val (processedTweet, hashtags, sentiment) = analyzeTweet(tweet)
+          println(s"Processed Tweet: $processedTweet")
+          val producerRecord = new ProducerRecord[String, String](processedTopic, processedTweet)
+          producer.send(producerRecord)
+
+          counter += 1
+          if (counter >= 5) {
+            println("Reached the limit of 5 tweets.")
+            sys.exit(0)
+          }
+          Thread.sleep(1000)
+        }
       }
-    } catch {
-      case e: Exception => println(s"Error while streaming tweets: ${e.getMessage}")
+    }
+    catch {
+      case e: Exception =>
+        println(s"Error while streaming tweets: ${e.getMessage}")
+        e.printStackTrace()
     } finally {
       producer.close()
+      consumer.close()
       println("Tweet streaming completed.")
     }
   }
 }
+
+
