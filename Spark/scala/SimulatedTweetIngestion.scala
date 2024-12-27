@@ -28,6 +28,7 @@ object SimulatedTweetIngestion {
 
     println(s"Streaming tweets from $tweetFilePath to Kafka topic: $kafkaTopic")
 
+
     tweets.foreach { tweet =>
       val record = new ProducerRecord[String, String](kafkaTopic, tweet)
       producer.send(record)
@@ -44,10 +45,12 @@ object SimulatedTweetIngestion {
 
     def analyzeSentimentBasic(text: String): String = {
       val lowerText = text.toLowerCase
+
       if (lowerText.contains("happy") || lowerText.contains("great") || lowerText.contains("good")) "Positive"
       else if (lowerText.contains("sad") || lowerText.contains("bad") || lowerText.contains("terrible")) "Negative"
       else "Neutral"
     }
+
 
     def analyzeTweet(tweet: String): (String, Array[String], String) = {
       val sentiment = analyzeSentimentBasic(tweet)
@@ -61,6 +64,7 @@ object SimulatedTweetIngestion {
       val hashtagPattern = """#\w+""".r
       hashtagPattern.findAllIn(text).toArray
     }
+
 
     try {
       var counter = 0
@@ -81,8 +85,7 @@ object SimulatedTweetIngestion {
           Thread.sleep(1000)
         }
       }
-    }
-    catch {
+    }catch {
       case e: Exception =>
         println(s"Error while streaming tweets: ${e.getMessage}")
         e.printStackTrace()
