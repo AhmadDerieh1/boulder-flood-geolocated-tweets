@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets_3048.iml" filepath="$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets_3048.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets_3048.boulder-flood-geolocated-tweets_3048-build.iml" filepath="$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets_3048.boulder-flood-geolocated-tweets_3048-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets.iml" filepath="$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets.boulder-flood-geolocated-tweets-build.iml" filepath="$PROJECT_DIR$/.idea/modules/boulder-flood-geolocated-tweets.boulder-flood-geolocated-tweets-build.iml" />
     </modules>
   </component>
 </project>

@@ -7,7 +7,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 
 import scala.collection.JavaConverters._
-
 object SimulatedTweetIngestion {
   def main(args: Array[String]): Unit = {
 
@@ -25,15 +24,16 @@ object SimulatedTweetIngestion {
 
     val tweetFilePath = "src/main/boulder_flood_geolocated_tweets.json"
     val tweets = Source.fromFile(tweetFilePath).getLines()
+    // val tweets = Source.fromFile(tweetFilePath).getLines().take(5)
 
     println(s"Streaming tweets from $tweetFilePath to Kafka topic: $kafkaTopic")
+
 
     tweets.foreach { tweet =>
       val record = new ProducerRecord[String, String](kafkaTopic, tweet)
       producer.send(record)
     }
     producer.close()
-
     val consumerProps = new Properties()
     consumerProps.put("bootstrap.servers", kafkaBrokers)
     consumerProps.put("key.deserializer", classOf[StringDeserializer].getName)
@@ -51,6 +51,7 @@ object SimulatedTweetIngestion {
       else "Neutral"
     }
 
+
     def analyzeTweet(tweet: String): (String, Array[String], String) = {
       val sentiment = analyzeSentimentBasic(tweet)
       val hashtags = extractHashtags(tweet)
@@ -63,6 +64,7 @@ object SimulatedTweetIngestion {
       val hashtagPattern = """#\w+""".r
       hashtagPattern.findAllIn(text).toArray
     }
+
 
     try {
       var counter = 0
@@ -83,7 +85,7 @@ object SimulatedTweetIngestion {
           Thread.sleep(1000)
         }
       }
-    } catch {
+    }catch {
       case e: Exception =>
         println(s"Error while streaming tweets: ${e.getMessage}")
         e.printStackTrace()
@@ -94,3 +96,5 @@ object SimulatedTweetIngestion {
     }
   }
 }
+
+
