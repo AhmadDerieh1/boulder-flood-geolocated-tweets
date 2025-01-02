@@ -7,6 +7,7 @@ scalaVersion := "2.12.18" // Ensure this version is compatible with your project
 // Project dependencies
 libraryDependencies ++= Seq(
   libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.10.0"
+    libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.9.0"
 
   // MongoDB Scala Driver
   "org.mongodb" %% "mongo-scala-driver" % "4.6.0",
