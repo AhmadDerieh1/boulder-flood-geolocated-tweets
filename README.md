@@ -31,3 +31,25 @@ Follow these steps to get the project running on your local machine:
    ```bash
    git clone https://github.com/AhmadDerieh1/boulder-flood-geolocated-tweets.git
    cd boulder-flood-geolocated-tweets
+2. **Run Kafka**:
+   
+  **Add these to build.sbt file** 
+```cmd
+libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.5.0"
+
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.9"
+```
+ **How to Run Kafka on Windows**
+
+1. **Start Zookeeper**
+Kafka requires Zookeeper to manage its cluster. Start Zookeeper using:
+```cmd
+bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+```
+
+2. **Start Kafka Broker**
+In another terminal, start the Kafka broker:
+```cmd
+bin\windows\kafka-server-start.bat config\server.properties
+```
+
