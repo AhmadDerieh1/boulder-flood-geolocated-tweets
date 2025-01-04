@@ -23,6 +23,7 @@ Before running the project, ensure that you have the following installed:
 - **Scala**: Version 2.x (For compatibility with the project code).
 - **Apache Spark**: Version 3.x (For distributed data processing).
 - **SBT**: A build tool for Scala projects, used to manage dependencies.
+
 ## Installation
 
 Follow these steps to get the project running on your local machine:
@@ -31,25 +32,53 @@ Follow these steps to get the project running on your local machine:
    ```bash
    git clone https://github.com/AhmadDerieh1/boulder-flood-geolocated-tweets.git
    cd boulder-flood-geolocated-tweets
+   ```
+
 2. **Run Kafka**:
-   
-  **Add these to build.sbt file** 
-```cmd
-libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.5.0"
 
-libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.9"
-```
- **How to Run Kafka on Windows**
+   Add these dependencies to your `build.sbt` file:
+   ```scala
+   libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.5.0"
+   libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.9"
+   ```
 
-1. **Start Zookeeper**
-Kafka requires Zookeeper to manage its cluster. Start Zookeeper using:
-```cmd
-bin\windows\zookeeper-server-start.bat config\zookeeper.properties
-```
+   **How to Run Kafka on Windows**:
 
-2. **Start Kafka Broker**
-In another terminal, start the Kafka broker:
-```cmd
-bin\windows\kafka-server-start.bat config\server.properties
-```
+   1. **Start Zookeeper**:
+      Kafka requires Zookeeper to manage its cluster. Start Zookeeper using:
+      ```cmd
+      bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+      ```
 
+   2. **Start Kafka Broker**:
+      In another terminal, start the Kafka broker:
+      ```cmd
+      bin\windows\kafka-server-start.bat config\server.properties
+      ```
+
+3. **Install MongoDB**:
+
+   Download and install MongoDB from the [official MongoDB website](https://www.mongodb.com/try/download/community).
+
+   **Start MongoDB**:
+   Once MongoDB is installed, you can start it by running the following command:
+   ```cmd
+   mongod
+   ```
+   By default, MongoDB runs on `localhost:27017`.
+
+4. **MongoDB Integration**:
+   To integrate MongoDB with the project, ensure that the MongoDB Scala Driver is included in your `build.sbt`:
+   ```scala
+   libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
+   ```
+
+5. **MongoDB Setup**:
+   The processed tweet data will be stored in a MongoDB database named `tweets_db` and a collection named `tweets_collection`. You can create the MongoDB database by simply running the project; MongoDB will automatically create the database and collection.
+
+6. **Run the Project**:
+   To run the project, execute the following command:
+   ```bash
+   sbt run
+   ```
+   This will start processing tweets and storing them in MongoDB, as well as performing sentiment analysis and sending data to Kafka.
